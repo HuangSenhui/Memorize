@@ -13,13 +13,12 @@ struct ContentView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
     
     var body: some View {
-        HStack {
-            ForEach(viewModel.cards) { card in
-                CardView(card: card)
-                    .onTapGesture {
-                        self.viewModel.choose(card: card)
-                }
+        Grid(viewModel.cards) { card in
+            CardView(card: card)
+                .onTapGesture {
+                    self.viewModel.choose(card: card)   // why use `self.`? 闭包是引用类型，viewModel也是引用类型
             }
+            .padding(5)
         }
         .padding()
         .foregroundColor(Color.yellow)
@@ -44,23 +43,27 @@ struct CardView: View {
         
         GeometryReader { geometry in
             self.body(of: geometry.size)
-
+            
         }
         
     }
     
     func body(of size: CGSize) -> some View {
         ZStack {
-            if self.card.isFaceUp {
+            if card.isFaceUp {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(Color.white)
+                
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(lineWidth: borderWidth)
                 
-                Text(self.card.content)
+                Text(card.content)
             } else {
-                RoundedRectangle(cornerRadius: cornerRadius)
+                if !card.isMatched {
+                    RoundedRectangle(cornerRadius: cornerRadius)
                     .fill()
+                }
+                
             }
             
         }
