@@ -27,7 +27,9 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(viewModel: EmojiMemoryGame())
+        let vm = EmojiMemoryGame()
+        vm.choose(card: vm.cards[0])
+        return ContentView(viewModel: vm)
     }
 }
 
@@ -35,9 +37,6 @@ struct ContentView_Previews: PreviewProvider {
 struct CardView: View {
     
     var card: MemoryGame<String>.Card
-    
-    let cornerRadius: CGFloat = 10.0
-    let borderWidth: CGFloat = 3.0
     
     var body: some View {
         
@@ -48,22 +47,23 @@ struct CardView: View {
         
     }
     
-    func body(of size: CGSize) -> some View {
+    private func body(of size: CGSize) -> some View {
         ZStack {
-            if card.isFaceUp {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color.white)
-                
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(lineWidth: borderWidth)
-                
-                Text(card.content)
-            } else {
-                if !card.isMatched {
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill()
+            if card.isFaceUp || !card.isMatched {
+                ZStack {
+                    // iOS 坐标原点在左上角
+                    // 角度0 水平右侧
+                    Pie(
+                        startAngle: Angle.degrees(-90),
+                        endAngle: Angle.degrees(120-90),
+                        clockwise: true
+                    )
+                        .opacity(0.5)
+                        .padding(5)
+                    
+                    Text(card.content)
                 }
-                
+                .cardify(isFaceUp: card.isFaceUp)
             }
             
         }
@@ -71,7 +71,7 @@ struct CardView: View {
     }
     
     //
-    func fontSize(size: CGSize) -> Font {
-        Font.system(size: min(size.width, size.height) * 0.8)
+    private func fontSize(size: CGSize) -> Font {
+        Font.system(size: min(size.width, size.height) * 0.7)
     }
 }

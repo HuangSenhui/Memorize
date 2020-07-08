@@ -19,9 +19,10 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
         var content: CardContent    // 卡片显示内容：可以是字符、数字、图片... 所以使用泛型（don't care type）
     }
     
-    var cards: Array<Card>
+    // 只读，避免被修改
+    private(set) var cards: Array<Card>
     // 这里老师展示了可选性的巧妙用法
-    var indexOfTheOneAndOnlyFaceUp: Int? {
+    private var indexOfTheOneAndOnlyFaceUp: Int? {
         get {
             let faceupIndices = cards.indices.filter { cards[$0].isFaceUp } // 已翻转的
             if faceupIndices.count == 1 {   // 有2张以上的牌时，清空已翻转，并在set方法执行时
