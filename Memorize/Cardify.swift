@@ -8,18 +8,35 @@
 
 import SwiftUI
 
-struct Cardify: ViewModifier {
-    var isFaceUp: Bool
+struct Cardify: AnimatableModifier {
+    var rotation: Double
+    var isFaceUp: Bool {
+        rotation < 90
+    }
+    
+    init(isFaceUp: Bool) {
+        rotation = isFaceUp ? 0 : 180
+    }
+    
+    var animatableData: Double {
+        get { return rotation }
+        set { rotation = newValue }
+    }
+    
     func body(content: Content) -> some View {
         ZStack {
-            if isFaceUp {
+            Group {
                 RoundedRectangle(cornerRadius: cornerRadius).fill(Color.white)
                 RoundedRectangle(cornerRadius: cornerRadius).stroke(lineWidth: borderWidth)
                 content // 代表被修饰容器的内容
-            } else {
-                RoundedRectangle(cornerRadius: cornerRadius).fill()
             }
+            .opacity(isFaceUp ? 1 : 0)
+           
+            RoundedRectangle(cornerRadius: cornerRadius).fill()
+                .opacity(isFaceUp ? 0 : 1)
+
         }
+        .rotation3DEffect(Angle(degrees: rotation), axis: (0,1,0))
     }
     
     private let cornerRadius: CGFloat = 10.0

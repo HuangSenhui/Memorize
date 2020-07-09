@@ -13,16 +13,31 @@ struct ContentView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
     
     var body: some View {
-        Grid(viewModel.cards) { card in
-            CardView(card: card)
-                .onTapGesture {
-                    self.viewModel.choose(card: card)   // why use `self.`? 闭包是引用类型，viewModel也是引用类型
+        
+        VStack {
+            Grid(viewModel.cards) { card in
+                CardView(card: card)
+                    .onTapGesture {
+                        withAnimation(.linear(duration: 1)) {
+                            self.viewModel.choose(card: card)   // why use `self.`? 闭包是引用类型，viewModel也是引用类型
+                            
+                        }
+                }
+                .padding(5)
             }
-            .padding(5)
+            .padding()
+            .foregroundColor(Color.yellow)
+            
+            Button(action: {
+                withAnimation(.easeInOut) {
+                    self.viewModel.resetGame()
+                }
+            }) {
+                Text("新游戏")
+            }
         }
-        .padding()
-        .foregroundColor(Color.yellow)
     }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
@@ -46,28 +61,55 @@ struct CardView: View {
         }
         
     }
+
+    @State private var animatiedBounsRemaining: Double = 0
     
-    private func body(of size: CGSize) -> some View {
-        ZStack {
-            if card.isFaceUp || !card.isMatched {
-                ZStack {
-                    // iOS 坐标原点在左上角
-                    // 角度0 水平右侧
-                    Pie(
-                        startAngle: Angle.degrees(-90),
-                        endAngle: Angle.degrees(120-90),
-                        clockwise: true
-                    )
-                        .opacity(0.5)
-                        .padding(5)
-                    
-                    Text(card.content)
-                }
-                .cardify(isFaceUp: card.isFaceUp)
-            }
-            
+    private func startBounsAnimation() {
+        animatiedBounsRemaining = card.bounsRemaining
+        withAnimation(.linear(duration: card.bounsTimeRemaining)) {
+            animatiedBounsRemaining = 0
         }
-        .font(fontSize(size: size))
+    }
+    
+    @ViewBuilder
+    private func body(of size: CGSize) -> some View {
+        
+
+        if card.isFaceUp || !card.isMatched {
+            ZStack {
+            
+                Group {
+                    if card.customBounsTime {
+                        // iOS 坐标原点在左上角
+                        // 角度0 水平右侧
+                        Pie(
+                            startAngle: Angle.degrees(-90),
+                            endAngle: Angle.degrees(-animatiedBounsRemaining * 360 - 90),    // 用 - 计时 * 360
+                            clockwise: true
+                        )
+                            .onAppear {
+                                self.startBounsAnimation()
+                        }
+                        
+                    } else {
+                        Pie(
+                            startAngle: Angle.degrees(-90),
+                            endAngle: Angle.degrees(-card.bounsRemaining * 360 - 90),    // 用 - 计时 * 360
+                            clockwise: true
+                        )
+                    }
+                    
+                }
+                .opacity(0.5)
+                .padding(5)
+                
+                Text(card.content)
+                    .font(fontSize(size: size))
+            }
+            .cardify(isFaceUp: card.isFaceUp)
+            .transition(AnyTransition.scale)
+        }
+        
     }
     
     //

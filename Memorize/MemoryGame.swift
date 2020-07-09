@@ -14,9 +14,27 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
     
     struct Card: Identifiable {
         var id: Int
-        var isFaceUp: Bool = false
-        var isMatched: Bool = false
+        var isFaceUp: Bool = false {
+            didSet {
+                if isFaceUp {
+                    // 开始计算时间
+                } else {
+                    // 停止计算时间
+                }
+            }
+        }
+        var isMatched: Bool = false {
+            didSet {
+                if isMatched {
+                    // 停止计算时间
+                }
+            }
+        }
         var content: CardContent    // 卡片显示内容：可以是字符、数字、图片... 所以使用泛型（don't care type）
+        
+        var customBounsTime = true
+        var bounsRemaining = 2.0
+        var bounsTimeRemaining = 5.0    // 剩余时间
     }
     
     // 只读，避免被修改
@@ -50,6 +68,7 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
             cards.append(Card(id: index*2, content: content))
             cards.append(Card(id: index*2+1, content: content))
         }
+        cards.shuffle()
     }
     
     mutating func choose(card: Card) {
